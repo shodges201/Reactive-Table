@@ -78,7 +78,7 @@
 
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js"></script>
-    <div style="text-align: center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+    <div id="container" style="text-align: center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width:80%;">
         <h1>Please select a color from below</h1>
         <p style="font-size:1.1em;">Edit the non-active square color by clicking on the color wheel. Select the active square color by selecting a color with the check box clicked below.</p>
         <label class="container">Active Color
@@ -93,6 +93,8 @@
         (function () {
             let canvas = document.getElementById('canvas');
             let ctx = canvas.getContext("2d");
+            canvas.width= $("#container").width() < 400 ? $("#container").width() : 400;
+            canvas.height = canvas.width;
 
             function drawCircle() {
                 let radius = Math.min($("#canvas").height(), $("#canvas").height()) / 2;
