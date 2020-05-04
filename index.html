@@ -78,26 +78,42 @@
 
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js"></script>
-    <div id="container" style="text-align: center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width:80%;">
+    <div id="container"
+        style="text-align: center; position: absolute; left: 50%; transform: translate(-50%, 0); width:80%;">
         <h1>Please select a color from below</h1>
-        <p style="font-size:1.1em;">Edit the non-active square color by clicking on the color wheel. Select the active square color by selecting a color with the check box clicked below.</p>
+        <p style="font-size:1.1em;">Edit the non-active square color by clicking on the color wheel. Select the active
+            square color by selecting a color with the check box clicked below.</p>
         <label class="container">Active Color
-            <input type="checkbox">
+            <input type="checkbox" id="checkbox">
             <span class="checkmark" style="margin: auto;"></span>
         </label>
         <br>
         <div style="height:20px;"></div>
-        <canvas id="canvas" height=400 width=400></canvas>
+        <div id="canvas-container" style="position: absolute;">
+            <canvas id="canvas" height=400 width=400 style="position: absolute;"></canvas>
+            <canvas id="canvas-tracker" height=400 width=400 style="position: absolute;"></canvas>
+        </div>
     </div>
     <script>
         (function () {
             let canvas = document.getElementById('canvas');
+            let topCanvas = document.getElementById('canvas-tracker');
             let ctx = canvas.getContext("2d");
-            canvas.width= $("#container").width() < 400 ? $("#container").width() : 400;
+            topCtx = topCanvas.getContext("2d");
+            canvas.width = $("#container").width() < 600 ? $("#container").width() : 400;
             canvas.height = canvas.width;
+            topCanvas.height = canvas.height;
+            topCanvas.width = topCanvas.width;
+            topCanvas.left = getOffset(canvas).left;
+            topCanvas.top = getOffset(canvas).top;
+            console.log(getOffset(canvas).left);
+            console.log(getOffset(canvas).top);
+            $("#checkbox").val("off");
 
             function drawCircle() {
-                let radius = Math.min($("#canvas").height(), $("#canvas").height()) / 2;
+                let radius = Math.min($("#canvas").height(), $("#canvas").width()) / 2;
+                const left = $("#container").width()/2-radius;
+                $("#canvas-container").css("left", left);
                 let image = ctx.createImageData(2 * radius, 2 * radius);
                 let data = image.data;
 
@@ -135,6 +151,18 @@
                 }
 
                 ctx.putImageData(image, 0, 0);
+                topCtx.beginPath();
+                topCtx.arc(radius, radius, 5, 0 * Math.PI, 2 * Math.PI);
+                topCtx.fillStyle = "rgba(0, 0, 0, 0.0)";
+                topCtx.fill();
+                topCtx.strokeStyle = "black";
+                topCtx.moveTo(radius, radius);
+                topCtx.lineTo(radius, radius + 5);
+                topCtx.lineTo(radius, radius - 5);
+                topCtx.moveTo(radius, radius);
+                topCtx.lineTo(radius + 5, radius);
+                topCtx.lineTo(radius - 5, radius);
+                topCtx.stroke();
             }
 
             function xy2polar(x, y) {
@@ -187,16 +215,59 @@
             return [255 * r, 255 * g, 255 * b];
         }
 
-        document.getElementById("canvas").addEventListener("click", function (e) {
+        function getOffset(el) {
+            const rect = el.getBoundingClientRect();
+            return {
+                left: rect.left + window.scrollX,
+                top: rect.top + window.scrollY
+            };
+        }
+
+        $("#checkbox").on("click", function (event) {
+            event.target.value = event.target.value === "on" ? "off" : "on";
+            console.log(event.target.value);
+        })
+
+        function componentToHex(c) {
+            var hex = c.toString(16);
+            return hex.length == 1 ? "0" + hex : hex;
+        }
+
+        function rgbToHex(r, g, b) {
+            return "0x" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+        }
+
+        document.getElementById("canvas-tracker").addEventListener("click", function (e) {
             // calculate the x and y coordinates of the cursor
             console.log(e);
             x = parseInt(e.clientX - offsetX);
             y = parseInt(e.clientY - offsetY);
-            var imagesdata = e.target.getContext('2d').getImageData(x, y, 1, 1);
+
+            let ctx = document.getElementById("canvas-tracker").getContext("2d");
+            let wheel = document.getElementById("canvas").getContext("2d");
+
+            console.log(x, y);
+
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0 * Math.PI, 2 * Math.PI);
+            ctx.fillStyle = "rgba(0, 0, 0, 0.0)";
+            ctx.fill();
+            ctx.strokeStyle = "black";
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, y + 5);
+            ctx.lineTo(x, y - 5);
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + 5, y);
+            ctx.lineTo(x - 5, y);
+            ctx.stroke();
+
+            var imagesdata = wheel.getImageData(x, y, 1, 1);
             var new_color = [imagesdata.data[0], imagesdata.data[1], imagesdata.data[2]];
-            const selectedColor = "rgb(" + new_color.join() + ")";
+            const selectedColor = rgbToHex(new_color[0], new_color[1], new_color[2]);
             console.log(selectedColor);
-        })
+        });
+
     </script>
 </body>
 
