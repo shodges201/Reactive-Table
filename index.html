@@ -87,7 +87,9 @@
             <input type="checkbox" id="checkbox">
             <span class="checkmark" style="margin: auto;"></span>
         </label>
-        <br>
+        <div style="width:100%; margin-top:1em;">
+            <span style="font-size: 22px;">Selected Color: <canvas id="selected-color-canvas" height=25 width=25 style="position: absolute; margin-left: 10px;"></canvas></span>
+        </div>
         <div style="height:20px;"></div>
         <div id="canvas-container" style="position: absolute;">
             <canvas id="canvas" height=400 width=400 style="position: absolute;"></canvas>
@@ -151,13 +153,14 @@
                 }
 
                 ctx.putImageData(image, 0, 0);
-                topCtx.beginPath();
+                // keeping this in for when the websocket is originally made, then the page can get the initial color from the server
+                /*topCtx.beginPath();
                 topCtx.arc(radius, radius, 6, 0 * Math.PI, 2 * Math.PI);
                 topCtx.fillStyle = "rgba(0, 0, 0, 0.0)";
                 topCtx.fill();
                 topCtx.strokeStyle = "black";
                 topCtx.lineWidth=2;
-                topCtx.stroke();
+                topCtx.stroke();*/
             }
 
             function xy2polar(x, y) {
@@ -240,6 +243,7 @@
 
             let ctx = document.getElementById("canvas-tracker").getContext("2d");
             let wheel = document.getElementById("canvas").getContext("2d");
+            let selectedColorCtx = document.getElementById("selected-color-canvas").getContext("2d");
 
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             ctx.beginPath();
@@ -253,6 +257,11 @@
             var imagesdata = wheel.getImageData(x, y, 1, 1);
             var new_color = [imagesdata.data[0], imagesdata.data[1], imagesdata.data[2]];
             const selectedColor = rgbToHex(new_color[0], new_color[1], new_color[2]);
+
+            selectedColorCtx.beginPath();
+            selectedColorCtx.rect(0, 0, selectedColorCtx.canvas.width, selectedColorCtx.canvas.height);
+            selectedColorCtx.fillStyle = `rgb(${imagesdata.data[0]},${imagesdata.data[1]},${imagesdata.data[2]})`;
+            selectedColorCtx.fill();
             console.log(selectedColor);
         });
 
