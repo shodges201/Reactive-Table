@@ -88,7 +88,8 @@
             <span class="checkmark" style="margin: auto;"></span>
         </label>
         <div style="width:100%; margin-top:1em;">
-            <span style="font-size: 22px;">Selected Color: <canvas id="selected-color-canvas" height=25 width=25 style="position: absolute; margin-left: 10px;"></canvas></span>
+            <span style="font-size: 22px;">Selected Color: <canvas id="selected-color-canvas" height=25 width=25
+                    style="position: absolute; margin-left: 10px;"></canvas></span>
         </div>
         <div style="height:20px;"></div>
         <div id="canvas-container" style="position: absolute;">
@@ -114,7 +115,7 @@
 
             function drawCircle() {
                 let radius = Math.min($("#canvas").height(), $("#canvas").width()) / 2;
-                const left = $("#container").width()/2-radius;
+                const left = $("#container").width() / 2 - radius;
                 $("#canvas-container").css("left", left);
                 let image = ctx.createImageData(2 * radius, 2 * radius);
                 let data = image.data;
@@ -223,6 +224,10 @@
 
         $("#checkbox").on("click", function (event) {
             event.target.value = event.target.value === "on" ? "off" : "on";
+            let ctx = document.getElementById("canvas-tracker").getContext("2d");
+            let selectedColorCtx = document.getElementById("selected-color-canvas").getContext("2d");
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            selectedColorCtx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             console.log(event.target.value);
         })
 
