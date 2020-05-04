@@ -152,16 +152,11 @@
 
                 ctx.putImageData(image, 0, 0);
                 topCtx.beginPath();
-                topCtx.arc(radius, radius, 5, 0 * Math.PI, 2 * Math.PI);
+                topCtx.arc(radius, radius, 6, 0 * Math.PI, 2 * Math.PI);
                 topCtx.fillStyle = "rgba(0, 0, 0, 0.0)";
                 topCtx.fill();
                 topCtx.strokeStyle = "black";
-                topCtx.moveTo(radius, radius);
-                topCtx.lineTo(radius, radius + 5);
-                topCtx.lineTo(radius, radius - 5);
-                topCtx.moveTo(radius, radius);
-                topCtx.lineTo(radius + 5, radius);
-                topCtx.lineTo(radius - 5, radius);
+                topCtx.lineWidth=2;
                 topCtx.stroke();
             }
 
@@ -246,20 +241,13 @@
             let ctx = document.getElementById("canvas-tracker").getContext("2d");
             let wheel = document.getElementById("canvas").getContext("2d");
 
-            console.log(x, y);
-
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             ctx.beginPath();
-            ctx.arc(x, y, 5, 0 * Math.PI, 2 * Math.PI);
+            ctx.arc(x, y, 6, 0 * Math.PI, 2 * Math.PI);
             ctx.fillStyle = "rgba(0, 0, 0, 0.0)";
             ctx.fill();
             ctx.strokeStyle = "black";
-            ctx.moveTo(x, y);
-            ctx.lineTo(x, y + 5);
-            ctx.lineTo(x, y - 5);
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + 5, y);
-            ctx.lineTo(x - 5, y);
+            ctx.lineWidth = 2;
             ctx.stroke();
 
             var imagesdata = wheel.getImageData(x, y, 1, 1);
