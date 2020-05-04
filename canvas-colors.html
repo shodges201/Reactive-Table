@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* Customize the label (the container) */
+        .container {
+            position: relative;
+            padding-left: 35px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            font-size: 22px;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            text-align: left;
+        }
+
+        /* Hide the browser's default checkbox */
+        .container input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        /* Create a custom checkbox */
+        .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 25px;
+            width: 25px;
+            background-color: #eee;
+        }
+
+        /* On mouse-over, add a grey background color */
+        .container:hover input~.checkmark {
+            background-color: #ccc;
+        }
+
+        /* When the checkbox is checked, add a blue background */
+        .container input:checked~.checkmark {
+            background-color: #2196F3;
+        }
+
+        /* Create the checkmark/indicator (hidden when not checked) */
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+
+        /* Show the checkmark when checked */
+        .container input:checked~.checkmark:after {
+            display: block;
+        }
+
+        /* Style the checkmark/indicator */
+        .container .checkmark:after {
+            left: 9px;
+            top: 5px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 3px 3px 0;
+            -webkit-transform: rotate(45deg);
+            -ms-transform: rotate(45deg);
+            transform: rotate(45deg);
+        }
+    </style>
+</head>
+
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js"></script>
+    <div style="text-align: center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <h1>Please select a color from below</h1>
+        <p style="font-size:1.1em;">Edit the non-active square color by clicking on the color wheel. Select the active square color by selecting a color with the check box clicked below.</p>
+        <label class="container">Active Color
+            <input type="checkbox">
+            <span class="checkmark" style="margin: auto;"></span>
+        </label>
+        <br>
+        <div style="height:20px;"></div>
+        <canvas id="canvas" height=400 width=400></canvas>
+    </div>
+    <script>
+        (function () {
+            let canvas = document.getElementById('canvas');
+            let ctx = canvas.getContext("2d");
+
+            function drawCircle() {
+                let radius = Math.min($("#canvas").height(), $("#canvas").height()) / 2;
+                let image = ctx.createImageData(2 * radius, 2 * radius);
+                let data = image.data;
+
+                for (let x = -radius; x < radius; x++) {
+                    for (let y = -radius; y < radius; y++) {
+
+                        let [r, phi] = xy2polar(x, y);
+
+                        if (r > radius) {
+                            // skip all (x,y) coordinates that are outside of the circle
+                            continue;
+                        }
+
+                        let deg = rad2deg(phi);
+
+                        // Figure out the starting index of this pixel in the image data array.
+                        let rowLength = 2 * radius;
+                        let adjustedX = x + radius; // convert x from [-50, 50] to [0, 100] (the coordinates of the image data array)
+                        let adjustedY = y + radius; // convert y from [-50, 50] to [0, 100] (the coordinates of the image data array)
+                        let pixelWidth = 4; // each pixel requires 4 slots in the data array
+                        let index = (adjustedX + (adjustedY * rowLength)) * pixelWidth;
+
+                        let hue = deg;
+                        let saturation = r / radius;
+                        let value = 1.0;
+
+                        let [red, green, blue] = hsv2rgb(hue, saturation, value);
+                        let alpha = 255;
+
+                        data[index] = red;
+                        data[index + 1] = green;
+                        data[index + 2] = blue;
+                        data[index + 3] = alpha;
+                    }
+                }
+
+                ctx.putImageData(image, 0, 0);
+            }
+
+            function xy2polar(x, y) {
+                let r = Math.sqrt(x * x + y * y);
+                let phi = Math.atan2(y, x);
+                return [r, phi];
+            }
+
+            // rad in [-π, π] range
+            // return degree in [0, 360] range
+            function rad2deg(rad) {
+                return ((rad + Math.PI) / (2 * Math.PI)) * 360;
+            }
+
+            drawCircle();
+        })();
+
+        var canvasOffset = $("#canvas").offset();
+        var offsetX = canvasOffset.left;
+        var offsetY = canvasOffset.top;
+
+
+        // hue in range [0, 360]
+        // saturation, value in range [0,1]
+        // return [r,g,b] each in range [0,255]
+        // See: https://en.wikipedia.org/wiki/HSL_and_HSV#From_HSV
+        function hsv2rgb(hue, saturation, value) {
+            let chroma = value * saturation;
+            let hue1 = hue / 60;
+            let x = chroma * (1 - Math.abs((hue1 % 2) - 1));
+            let r1, g1, b1;
+            if (hue1 >= 0 && hue1 <= 1) {
+                ([r1, g1, b1] = [chroma, x, 0]);
+            } else if (hue1 >= 1 && hue1 <= 2) {
+                ([r1, g1, b1] = [x, chroma, 0]);
+            } else if (hue1 >= 2 && hue1 <= 3) {
+                ([r1, g1, b1] = [0, chroma, x]);
+            } else if (hue1 >= 3 && hue1 <= 4) {
+                ([r1, g1, b1] = [0, x, chroma]);
+            } else if (hue1 >= 4 && hue1 <= 5) {
+                ([r1, g1, b1] = [x, 0, chroma]);
+            } else if (hue1 >= 5 && hue1 <= 6) {
+                ([r1, g1, b1] = [chroma, 0, x]);
+            }
+
+            let m = value - chroma;
+            let [r, g, b] = [r1 + m, g1 + m, b1 + m];
+
+            // Change r,g,b values from [0,1] to [0,255]
+            return [255 * r, 255 * g, 255 * b];
+        }
+
+        document.getElementById("canvas").addEventListener("click", function (e) {
+            // calculate the x and y coordinates of the cursor
+            console.log(e);
+            x = parseInt(e.clientX - offsetX);
+            y = parseInt(e.clientY - offsetY);
+            var imagesdata = e.target.getContext('2d').getImageData(x, y, 1, 1);
+            var new_color = [imagesdata.data[0], imagesdata.data[1], imagesdata.data[2]];
+            const selectedColor = "rgb(" + new_color.join() + ")";
+            console.log(selectedColor);
+        })
+    </script>
+</body>
+
+</html>
